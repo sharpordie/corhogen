@@ -271,7 +271,7 @@ main() {
     verify_requirements || return 1
     echo "NOT FINISHED"
 
-    change_setting "ocale.country" "Belgique"
+    change_setting "locale.country" "Belgique"
 
     local configs="$HOME/.kodi/userdata/guisettings.xml"
     gather_setting "$configs" "//*[@id='services.webserverusername']"
