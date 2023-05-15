@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155
 
 attend_addon() {
 
@@ -39,10 +40,10 @@ enable_addon() {
 
 enable_webserver() {
 
-    local enabled=${1:-true}
-    local secured=${2:-true}
-    local webuser=${3:-kodi}
-    local webpass=${4:-}
+    local enabled="${1:-true}"
+    local secured="${2:-true}"
+    local webuser="${3:-kodi}"
+    local webpass="${4:-}"
 
     # Finish kodi application
     systemctl stop kodi
@@ -51,7 +52,11 @@ enable_webserver() {
     local configs="$HOME/.kodi/userdata/guisettings.xml"
     update_setting "$configs" "//*[@id='services.webserver']" "true"
     update_setting "$configs" "//*[@id='services.webserver']/@default" "false"
-    update_setting "$configs" "//*[@id='services.webserverauthentication']" "false"
+    update_setting "$configs" "//*[@id='services.webserverauthentication']" "$secured"
+    update_setting "$configs" "//*[@id='services.webserverauthentication']/@default" "false"
+    update_setting "$configs" "//*[@id='services.webserverpassword']" "$webuser"
+    update_setting "$configs" "//*[@id='services.webserverpassword']/@default" "false"
+    update_setting "$configs" "//*[@id='services.webserverusername']" "$webpass"
     update_setting "$configs" "//*[@id='services.webserverauthentication']/@default" "false"
 
     # Launch kodi application
@@ -140,9 +145,10 @@ update_sources() {
     mkdir -p "$deposit/Séries"
     mkdir -p "$deposit/Torrents/Incomplets"
 
+    # Finish kodi application
     systemctl stop kodi
 
-    # TODO: Create the sources
+    # Create the sources
     local sources="$HOME/.kodi/userdata/sources.xml"
     {
         echo '<sources>'
@@ -152,20 +158,20 @@ update_sources() {
         echo '    <video>'
         echo '        <default pathversion="1"></default>'
         echo '        <source>'
-        echo '            <name>TV Shows</name>'
-        echo "            <path pathversion=\"1\">$deposit/Séries/</path>"
+        echo '            <name>Films</name>'
+        echo "            <path pathversion=\"1\">$deposit/Films/</path>"
         echo '            <allowsharing>true</allowsharing>'
         echo '        </source>'
         echo '        <source>'
-        echo '            <name>Movies</name>'
-        echo "            <path pathversion=\"1\">$deposit/Films/</path>"
+        echo '            <name>Séries</name>'
+        echo "            <path pathversion=\"1\">$deposit/Séries/</path>"
         echo '            <allowsharing>true</allowsharing>'
         echo '        </source>'
         echo '    </video>'
         echo '    <music>'
         echo '        <default pathversion="1"></default>'
         echo '        <source>'
-        echo '            <name>Music</name>'
+        echo '            <name>Musique</name>'
         echo "            <path pathversion=\"1\">$deposit/Musique/</path>"
         echo '            <allowsharing>true</allowsharing>'
         echo '        </source>'
@@ -173,7 +179,7 @@ update_sources() {
         echo '    <pictures>'
         echo '        <default pathversion="1"></default>'
         echo '        <source>'
-        echo '            <name>Pictures</name>'
+        echo '            <name>Photos</name>'
         echo "            <path pathversion=\"1\">$deposit/Photos/</path>"
         echo '            <allowsharing>true</allowsharing>'
         echo '        </source>'
@@ -186,7 +192,8 @@ update_sources() {
         echo '    </games>'
         echo '</sources>'
     } >"$sources"
-
+    
+    # Launch kodi application
     systemctl start kodi
 
     # TODO: Change the settings
@@ -264,7 +271,9 @@ main() {
     verify_requirements || return 1
     echo "NOT FINISHED"
 
-    update_sources
+    gather_setting "services.webserverusername"
+
+    # update_sources
     # update_youtube "" "" ""
     # update_vstream
 
