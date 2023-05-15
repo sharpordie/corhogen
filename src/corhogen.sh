@@ -54,10 +54,10 @@ enable_webserver() {
     update_setting "$configs" "//*[@id='services.webserver']/@default" "false"
     update_setting "$configs" "//*[@id='services.webserverauthentication']" "$secured"
     update_setting "$configs" "//*[@id='services.webserverauthentication']/@default" "false"
-    update_setting "$configs" "//*[@id='services.webserverpassword']" "$webuser"
+    update_setting "$configs" "//*[@id='services.webserverusername']" "$webuser"
+    update_setting "$configs" "//*[@id='services.webserverusername']/@default" "false"
+    update_setting "$configs" "//*[@id='services.webserverpassword']" "$webpass"
     update_setting "$configs" "//*[@id='services.webserverpassword']/@default" "false"
-    update_setting "$configs" "//*[@id='services.webserverusername']" "$webpass"
-    update_setting "$configs" "//*[@id='services.webserverauthentication']/@default" "false"
 
     # Launch kodi application
     systemctl start kodi
@@ -271,7 +271,7 @@ main() {
     verify_requirements || return 1
     echo "NOT FINISHED"
 
-    gather_setting "services.webserverusername"
+    gather_setting "//*[@id='services.webserverusername']"
 
     # update_sources
     # update_youtube "" "" ""
