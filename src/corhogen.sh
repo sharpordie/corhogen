@@ -76,8 +76,8 @@ change_setting() {
     # Invoke jsonrpc request
     local address="localhost:8080"
     local headers='Content-Type: application/json'
-    local payload='[{"jsonrpc":"2.0","method":"Settings.SetSettingValue","params":["'"$setting"'",'"$payload"'],"id":1}]'
-    # local payload="[{'jsonrpc':'2.0','method':'Settings.SetSettingValue','params':['$setting','$payload'],'id':1}]"
+    # local payload='[{"jsonrpc":"2.0","method":"Settings.SetSettingValue","params":["'"$setting"'",'"$payload"'],"id":1}]'
+    local payload="[{'jsonrpc':'2.0','method':'Settings.SetSettingValue','params':['$setting','$payload'],'id':1}]"
     curl "http://$address/jsonrpc" -H "$headers" -d "$payload"
 
 }
@@ -275,7 +275,8 @@ main() {
     # verify_requirements || return 1
     echo "NOT FINISHED"
 
-    change_setting "locale.country" "Belgique"
+    # kodi-send -a "SetGUILanguage(resource.language.fr_fr)"
+    change_setting "locale.country" "France"
 
     # local configs="$HOME/.kodi/userdata/guisettings.xml"
     # gather_setting "$configs" "//*[@id='services.webserverusername']"
