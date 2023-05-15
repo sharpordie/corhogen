@@ -3,16 +3,18 @@
 
 attend_addon() {
 
-    local addonid=${1}
+    local addonid="${1:-plugin.video.vstream}"
 
     while true; do
-        local address="localhost:8080"
-        local headers="content-type:application/json"
-        local payload="[{'jsonrpc':'2.0','method':'Addons.GetAddonDetails','params':{'addonid':'$addonid','properties':['name','path','dependencies','broken','enabled','installed']},'id':1}]"
-        details="$(curl "http://$address/jsonrpc" -H "$headers" -d "$payload")"
-        factor1="$(echo "$details" | jq -r '.[0].result.addon.broken' || true)"
-        factor2="$(echo "$details" | jq -r '.[0].result.addon.installed' || true)"
-        factor3="$(echo "$details" | jq -r '.[0].result.addon.enabled' || true)"
+        local address='localhost:8080'
+        local headers='content-type:application/json'
+        # local payload="[{'jsonrpc':'2.0','method':'Addons.GetAddonDetails','params':{'addonid':'$addonid','properties':['name','path','dependencies','broken','enabled','installed']},'id':1}]"
+        local payload='[{"jsonrpc":"2.0","method":"Addons.GetAddonDetails","params":{"addonid": "'"$addonid"'", "properties":["name","path","dependencies","broken","enabled","installed"]},"id":1}]'
+        local details="$(curl "http://$address/jsonrpc" -H "$headers" -d "$payload")"
+        echo "$details"
+        # factor1="$(echo "$details" | jq -r '.[0].result.addon.broken' || true)"
+        # factor2="$(echo "$details" | jq -r '.[0].result.addon.installed' || true)"
+        # factor3="$(echo "$details" | jq -r '.[0].result.addon.enabled' || true)"
         [[ "$factor1" == "false" && "$factor2" == "true" && "$factor3" == "true" ]] && return 0
         sleep 1
     done
@@ -25,15 +27,11 @@ enable_addon() {
     local addonid=${1}
     local enabled=${2}
 
-    # # Enable the webserver
-    # local results="$(netstat -an | grep 8080 | grep -i listen)"
-    # local present="$([[ "$results" == "" ]] && echo false || echo true)"
-    # [[ "$present" == "false" ]] && enable_webserver
-
     # Invoke jsonrpc request
     local address="localhost:8080"
     local headers="content-type:application/json"
-    local payload="[{'jsonrpc':'2.0','method':'Addons.SetAddonEnabled','params':{'addonid':'$addonid','enabled':'$enabled'},'id':1}]"
+    # local payload="[{'jsonrpc':'2.0','method':'Addons.SetAddonEnabled','params':{'addonid':'$addonid','enabled':'$enabled'},'id':1}]"
+    local payload='[{"jsonrpc":"2.0","method":"Addons.SetAddonEnabled","params":{"addonid":"'"$addonid"'","enabled":'"$enabled"'},"id":1}]'
     curl "http://$address/jsonrpc" -H "$headers" -d "$payload"
 
 }
@@ -45,61 +43,55 @@ enable_webserver() {
     local webuser="${3:-kodi}"
     local webpass="${4:-}"
 
-    # Finish kodi application
+    # Finish the application
     systemctl stop kodi
 
     # Change the settings
     local configs="$HOME/.kodi/userdata/guisettings.xml"
-    update_setting "$configs" "//*[@id='services.webserver']" "true"
-    update_setting "$configs" "//*[@id='services.webserver']/@default" "false"
-    update_setting "$configs" "//*[@id='services.webserverauthentication']" "$secured"
-    update_setting "$configs" "//*[@id='services.webserverauthentication']/@default" "false"
-    update_setting "$configs" "//*[@id='services.webserverusername']" "$webuser"
-    update_setting "$configs" "//*[@id='services.webserverusername']/@default" "false"
-    update_setting "$configs" "//*[@id='services.webserverpassword']" "$webpass"
-    update_setting "$configs" "//*[@id='services.webserverpassword']/@default" "false"
+    update_setting "$configs" '//*[@id="services.webserver"]' "$enabled"
+    update_setting "$configs" '//*[@id="services.webserverauthentication"]' "$secured"
+    update_setting "$configs" '//*[@id="services.webserverusername"]' "$webuser"
+    update_setting "$configs" '//*[@id="services.webserverpassword"]' "$webpass"
 
-    # Launch kodi application
-    systemctl start kodi
+    # Launch the application
+    systemctl start kodi && sleep 8
 
 }
 
-change_setting() {
+# change_setting() { # TODO: REMOVE
 
-    local setting=${1}
-    local payload=${2}
+#     local setting=${1}
+#     local payload=${2}
 
-    if [[ ! "$payload" =~ ^(-?[0-9]+|true|false)$ ]]; then
-        payload='"'"$payload"'"'
-    fi
+#     # Invoke jsonrpc request
+#     [[ ! "$payload" =~ ^(-?[0-9]+|true|false)$ ]] && local payload='"'"$payload"'"'
+#     local address="localhost:8080"
+#     local headers='Content-Type: application/json'
+#     local payload='[{"jsonrpc":"2.0","method":"Settings.SetSettingValue","params":["'"$setting"'",'"$payload"'],"id":1}]'
+#     curl "http://$address/jsonrpc" -H "$headers" -d "$payload" && sleep 1
 
-    # Invoke jsonrpc request
-    local address="localhost:8080"
-    local headers='Content-Type: application/json'
-    # local payload='[{"jsonrpc":"2.0","method":"Settings.SetSettingValue","params":["'"$setting"'",'"$payload"'],"id":1}]'
-    local payload="[{'jsonrpc':'2.0','method':'Settings.SetSettingValue','params':['$setting','$payload'],'id':1}]"
-    curl "http://$address/jsonrpc" -H "$headers" -d "$payload"
+# }
 
-}
+# gather_setting() {
 
-gather_setting() {
+#     local xmlfile=${1}
+#     local pattern=${2}
 
-    local xmlfile=${1}
-    local pattern=${2}
+#     # Invoke xmlstarlet command
+#     xmlstarlet sel -T -v "$pattern" "$xmlfile"
 
-    # Invoke xmlstarlet command
-    xmlstarlet sel -T -v "$pattern" "$xmlfile"
-
-}
+# }
 
 update_setting() {
 
-    local xmlfile=${1}
-    local pattern=${2}
-    local payload=${3}
+    local xmlfile="${1}"
+    local pattern="${2}"
+    local payload="${3}"
+    local default="${4:-true}"
 
-    # Invoke xmlstarlet command
+    # Invoke xmlstarlet commands
     xmlstarlet ed -L -u "$pattern" -v "$payload" "$xmlfile"
+    [[ "$default" == 'true' ]] && xmlstarlet ed -L -u "$pattern/@default" -v 'false' "$xmlfile"
 
 }
 
@@ -119,12 +111,114 @@ update_docker() {
     return 0
 }
 
+update_entware() {
+
+    current_file="$(dirname "$(readlink -f "$0")")/$(basename "$0")"
+    startup_file="${HOME}/.config/autostart.sh"
+
+    echo $current_file
+
+    # # Install the entware package manager and reboot.
+    # if ! [ -x "$(command -v opkg)" ]; then
+    #     echo "(sleep 10 && /usr/bin/sh ${current_file})&" | tee "${startup_file}"
+    #     installentware
+    #     reboot
+    #     exit 1
+    # fi
+
+    # # Remove the previously created autostart.sh script.
+    # rm -f "${startup_file}"
+
+    # # Install the qbittorrent package.
+    # opkg update && opkg upgrade
+    # opkg install qbittorrent
+}
+
 update_estuary() {
-    return 0
+
+    local configs="$HOME/.kodi/userdata/addon_data/skin.estuary/settings.xml"
+
+    # Finish the application
+    systemctl stop kodi
+
+    # Change the settings
+    update_setting "$configs" '//*[@id="homemenunofavbutton"]' 'true'
+    update_setting "$configs" '//*[@id="homemenunogamesbutton"]' 'true'
+    update_setting "$configs" '//*[@id="homemenunomoviebutton"]' 'false'
+    update_setting "$configs" '//*[@id="homemenunomusicbutton"]' 'false'
+    update_setting "$configs" '//*[@id="homemenunomusicvideobutton"]' 'true'
+    update_setting "$configs" '//*[@id="homemenunopicturesbutton"]' 'true'
+    update_setting "$configs" '//*[@id="homemenunoprogramsbutton"]' 'true'
+    update_setting "$configs" '//*[@id="homemenunoradiobutton"]' 'true'
+    update_setting "$configs" '//*[@id="homemenunotvbutton"]' 'true'
+    update_setting "$configs" '//*[@id="homemenunotvshowbutton"]' 'false'
+    update_setting "$configs" '//*[@id="homemenunovideosbutton"]' 'true'
+    update_setting "$configs" '//*[@id="homemenunoweatherbutton"]' 'true'
+
+    # Launch the application
+    systemctl start kodi && sleep 8
+
 }
 
 update_kodi() {
-    return 0
+
+    local configs="$HOME/.kodi/userdata/guisettings.xml"
+
+    # Change the language
+    local addonid="resource.language.fr_fr"
+    kodi-send -a "InstallAddon($addonid)" && sleep 6
+    kodi-send -a "SendClick(11)" && sleep 8
+    # kodi-send -a "SetGUILanguage($addonid)" && sleep 8
+    # kodi-send -a "RestartApp" && sleep 8
+
+    # Finish the application
+    systemctl stop kodi
+
+    # Change addon settings
+    update_setting "$configs" '//*[@id="addons.unknownsources"]' 'true'
+    update_setting "$configs" '//*[@id="addons.updatemode"]' '1'
+
+    # Change audio settings
+    update_setting "$configs" '//*[@id="audiooutput.channels"]' '10'
+    update_setting "$configs" '//*[@id="audiooutput.dtshdpassthrough"]' 'true'
+    update_setting "$configs" '//*[@id="audiooutput.dtspassthrough"]' 'true'
+    update_setting "$configs" '//*[@id="audiooutput.eac3passthrough"]' 'true'
+    update_setting "$configs" '//*[@id="audiooutput.passthrough"]' 'true'
+    update_setting "$configs" '//*[@id="audiooutput.truehdpassthrough"]' 'true'
+
+    # Change file settings
+    update_setting "$configs" '//*[@id="filelists.showparentdiritems"]' 'false'
+
+    # Change keyboard settings
+    update_setting "$configs" '//*[@id="locale.keyboardlayouts"]' 'French AZERTY'
+    update_setting "$configs" '//*[@id="locale.activekeyboardlayout"]' 'French AZERTY'
+
+    # Change library settings
+    update_setting "$configs" '//*[@id="videolibrary.backgroundupdate"]' 'true'
+
+    # Change locale settings
+    update_setting "$configs" '//*[@id="locale.audiolanguage"]' 'mediadefault'
+    update_setting "$configs" '//*[@id="locale.country"]' 'Belgique'
+    update_setting "$configs" '//*[@id="locale.language"]' 'resource.language.fr_fr'
+    update_setting "$configs" '//*[@id="locale.subtitlelanguage"]' 'forced_only'
+
+    # Change video settings
+    update_setting "$configs" '//*[@id="videoplayer.adjustrefreshrate"]' '2'
+    update_setting "$configs" '//*[@id="videoscreen.delayrefreshchange"]' '35'
+
+    # Change viewstates settings
+    update_setting "$configs" '/settings/viewstates/videonavtitles/sortattributes' '0' 'false'
+    update_setting "$configs" '/settings/viewstates/videonavtitles/sortmethod' '40' 'false'
+    update_setting "$configs" '/settings/viewstates/videonavtitles/sortorder' '2' 'false'
+    update_setting "$configs" '/settings/viewstates/videonavtitles/viewmode' '131123' 'false'
+    update_setting "$configs" '/settings/viewstates/videonavtvshows/sortattributes' '0' 'false'
+    update_setting "$configs" '/settings/viewstates/videonavtvshows/sortmethod' '40' 'false'
+    update_setting "$configs" '/settings/viewstates/videonavtvshows/sortorder' '2' 'false'
+    update_setting "$configs" '/settings/viewstates/videonavtvshows/viewmode' '131123' 'false'
+
+    # Launch the application
+    systemctl start kodi && sleep 8
+
 }
 
 update_luna() {
@@ -198,7 +292,7 @@ update_sources() {
     } >"$sources"
 
     # Launch kodi application
-    systemctl start kodi
+    systemctl start kodi && sleep 8
 
     # TODO: Change the settings
 
@@ -206,24 +300,21 @@ update_sources() {
 
 update_vstream() {
 
-    # Change the settings
-    update_setting "addons.unknownsources" "true"
-    update_setting "addons.updatemode" "1"
-
     # Expand the repository
     local address="https://kodi-vstream.github.io/repo/repository.vstream-0.0.6.zip"
     local deposit="$HOME/.kodi/addons"
-    kodi-send -a "Extract($address, $deposit)"
-    kodi-send -a "RestartApp"
+    kodi-send -a "Extract($address, $deposit)" && sleep 4
+    enable_addon "repository.vstream" "true" && sleep 4
 
     # Enable the repository
     local addonid="repository.vstream"
-    kodi-send -a "InstallAddon($addonid)"
-    sleep 2 && kodi-send -a "SendClick(11)"
+    kodi-send -a "InstallAddon($addonid)" && sleep 12
+    kodi-send -a "SendClick(11)" && sleep 8
 
     # Update the extension
     local addonid="plugin.video.vstream"
-    kodi-send -a "InstallAddon($addonid)"
+    kodi-send -a "InstallAddon($addonid)" && sleep 2
+    kodi-send -a "SendClick(11)" && sleep 8
 
 }
 
@@ -233,10 +324,6 @@ update_youtube() {
     local factor2=${2}
     local factor3=${3}
 
-    # Change the settings
-    update_setting "addons.unknownsources" "true"
-    update_setting "addons.updatemode" "1"
-
     # Expand the repository
     local address="http://ftp.fau.de/osmc/osmc/download/dev/anxdpanic/repositories/repository.anxdpanic-2.0.4.zip"
     local deposit="$HOME/.kodi/addons"
@@ -245,12 +332,12 @@ update_youtube() {
 
     # Enable the repository
     local addonid="repository.anxdpanic"
-    kodi-send -a "InstallAddon($addonid)"
-    sleep 2 && kodi-send -a "SendClick(11)"
+    kodi-send -a "InstallAddon($addonid)" && sleep 2
+    kodi-send -a "SendClick(11)"
 
     # Update the extension
     local addonid="plugin.video.youtube"
-    kodi-send -a "InstallAddon($addonid)"
+    kodi-send -a "InstallAddon($addonid)" && sleep 2
 
     # Change the settings
     local deposit="$HOME/.kodi/userdata/addon_data/plugin.video.youtube"
@@ -272,17 +359,13 @@ update_youtube() {
 
 main() {
 
+    update_entware
+
     # verify_requirements || return 1
-    echo "NOT FINISHED"
-
-    # kodi-send -a "SetGUILanguage(resource.language.fr_fr)"
-    change_setting "locale.country" "France"
-
-    # local configs="$HOME/.kodi/userdata/guisettings.xml"
-    # gather_setting "$configs" "//*[@id='services.webserverusername']"
-
+    # update_kodi
+    # update_estuary
     # update_sources
-    # update_youtube "" "" ""
+    # # update_youtube "" "" ""
     # update_vstream
 
 }
