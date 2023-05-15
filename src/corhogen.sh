@@ -140,20 +140,54 @@ update_sources() {
     mkdir -p "$deposit/Séries"
     mkdir -p "$deposit/Torrents/Incomplets"
 
+    systemctl stop kodi
+
     # TODO: Create the sources
-    # local sources="$HOME/.kodi/userdata/sources.xml"
-    # {
-    #     echo "{"
-    #     echo "    \"keys\": {"
-    #     echo "        \"developer\": {},"
-    #     echo "        \"personal\": {"
-    #     echo "            \"api_key\": \"$factor1\","
-    #     echo "            \"client_id\": \"$factor2\","
-    #     echo "            \"client_secret\": \"$factor3\""
-    #     echo "        }"
-    #     echo "    }"
-    #     echo "}"
-    # } >"$sources"
+    local sources="$HOME/.kodi/userdata/sources.xml"
+    {
+        echo '<sources>'
+        echo '    <programs>'
+        echo '        <default pathversion="1"></default>'
+        echo '    </programs>'
+        echo '    <video>'
+        echo '        <default pathversion="1"></default>'
+        echo '        <source>'
+        echo '            <name>TV Shows</name>'
+        echo "            <path pathversion=\"1\">$deposit/Séries/</path>"
+        echo '            <allowsharing>true</allowsharing>'
+        echo '        </source>'
+        echo '        <source>'
+        echo '            <name>Movies</name>'
+        echo "            <path pathversion=\"1\">$deposit/Films/</path>"
+        echo '            <allowsharing>true</allowsharing>'
+        echo '        </source>'
+        echo '    </video>'
+        echo '    <music>'
+        echo '        <default pathversion="1"></default>'
+        echo '        <source>'
+        echo '            <name>Music</name>'
+        echo "            <path pathversion=\"1\">$deposit/Musique/</path>"
+        echo '            <allowsharing>true</allowsharing>'
+        echo '        </source>'
+        echo '    </music>'
+        echo '    <pictures>'
+        echo '        <default pathversion="1"></default>'
+        echo '        <source>'
+        echo '            <name>Pictures</name>'
+        echo "            <path pathversion=\"1\">$deposit/Photos/</path>"
+        echo '            <allowsharing>true</allowsharing>'
+        echo '        </source>'
+        echo '    </pictures>'
+        echo '    <files>'
+        echo '        <default pathversion="1"></default>'
+        echo '    </files>'
+        echo '    <games>'
+        echo '        <default pathversion="1"></default>'
+        echo '    </games>'
+        echo '</sources>'
+    } >"$sources"
+
+    systemctl start kodi
 
     # TODO: Change the settings
 
