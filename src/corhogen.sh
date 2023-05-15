@@ -72,8 +72,8 @@ change_setting() {
     # Invoke jsonrpc request
     local address="localhost:8080"
     local headers="content-type:application/json"
-    # local payload='[{"jsonrpc":"2.0","method":"Settings.SetSettingValue","params":["'"$setting"'",'"$payload"'],"id":1}]'
-    local payload="[{'jsonrpc':'2.0','method':'Settings.SetSettingValue','params':['$setting','$payload'],'id':1}]"
+    local payload='[{"jsonrpc":"2.0","method":"Settings.SetSettingValue","params":["'"$setting"'",'"$payload"'],"id":1}]'
+    # local payload="[{'jsonrpc':'2.0','method':'Settings.SetSettingValue','params':['$setting','$payload'],'id':1}]"
     curl "http://$address/jsonrpc" -H "$headers" -d "$payload"
 
 }
