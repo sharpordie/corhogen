@@ -113,25 +113,24 @@ update_docker() {
 
 update_entware() {
 
-    current_file="$(dirname "$(readlink -f "$0")")/$(basename "$0")"
-    startup_file="${HOME}/.config/autostart.sh"
+    local current="$(dirname "$(readlink -f "$0")")/$(basename "$0")"
+    local startup="${HOME}/.config/autostart.sh"
 
-    echo $current_file
+    # Install entware package
+    if ! [ -x "$(command -v opkg)" ]; then
+        echo "(sleep 10 && /usr/bin/sh $current)&" | tee "$startup"
+        installentware
+        reboot
+        exit 1
+    fi
 
-    # # Install the entware package manager and reboot.
-    # if ! [ -x "$(command -v opkg)" ]; then
-    #     echo "(sleep 10 && /usr/bin/sh ${current_file})&" | tee "${startup_file}"
-    #     installentware
-    #     reboot
-    #     exit 1
-    # fi
+    # Remove autostart script
+    rm -f "$startup"
 
-    # # Remove the previously created autostart.sh script.
-    # rm -f "${startup_file}"
+    # Install qbittorrent package
+    opkg update && opkg upgrade
+    opkg install qbittorrent
 
-    # # Install the qbittorrent package.
-    # opkg update && opkg upgrade
-    # opkg install qbittorrent
 }
 
 update_estuary() {
