@@ -141,6 +141,20 @@ update_sources() {
     mkdir -p "$deposit/Torrents/Incomplets"
 
     # TODO: Create the sources
+    # local sources="$HOME/.kodi/userdata/sources.xml"
+    # {
+    #     echo "{"
+    #     echo "    \"keys\": {"
+    #     echo "        \"developer\": {},"
+    #     echo "        \"personal\": {"
+    #     echo "            \"api_key\": \"$factor1\","
+    #     echo "            \"client_id\": \"$factor2\","
+    #     echo "            \"client_secret\": \"$factor3\""
+    #     echo "        }"
+    #     echo "    }"
+    #     echo "}"
+    # } >"$sources"
+
     # TODO: Change the settings
 
 }
@@ -216,6 +230,7 @@ main() {
     verify_requirements || return 1
     echo "NOT FINISHED"
 
+    update_sources
     # update_youtube "" "" ""
     # update_vstream
 
