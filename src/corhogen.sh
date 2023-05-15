@@ -1,5 +1,24 @@
 #!/usr/bin/env bash
 
+attend_addon() {
+
+    local addonid=${1}
+
+    while true; do
+        local address="localhost:8080"
+        local headers="content-type:application/json"
+        local payload="[{'jsonrpc':'2.0','method':'Addons.GetAddonDetails','params':{'addonid':'$addonid','properties':['name','path','dependencies','broken','enabled','installed']},'id':1}]"
+        details="$(curl "http://$address/jsonrpc" -H "$headers" -d "$payload")"
+        factor1="$(echo "$details" | jq -r '.[0].result.addon.broken' || true)"
+        factor2="$(echo "$details" | jq -r '.[0].result.addon.installed' || true)"
+        factor3="$(echo "$details" | jq -r '.[0].result.addon.enabled' || true)"
+        [[ "$factor1" == "false" && "$factor2" == "true" && "$factor3" == "true" ]] && return 0
+        sleep 1
+    done
+    return 1
+
+}
+
 enable_addon() {
 
     local addonid=${1}
@@ -194,7 +213,8 @@ update_youtube() {
 
 main() {
 
-    enable_webserver
+    # update_youtube "" "" ""
+    update_vstream
 
 }
 
