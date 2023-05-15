@@ -69,9 +69,13 @@ change_setting() {
     local setting=${1}
     local payload=${2}
 
+    if [[ ! "$payload" =~ ^(-?[0-9]+|true|false)$ ]]; then
+        payload='"'"$payload"'"'
+    fi
+
     # Invoke jsonrpc request
     local address="localhost:8080"
-    local headers="content-type:application/json"
+    local headers='Content-Type: application/json'
     local payload='[{"jsonrpc":"2.0","method":"Settings.SetSettingValue","params":["'"$setting"'",'"$payload"'],"id":1}]'
     # local payload="[{'jsonrpc':'2.0','method':'Settings.SetSettingValue','params':['$setting','$payload'],'id':1}]"
     curl "http://$address/jsonrpc" -H "$headers" -d "$payload"
@@ -192,7 +196,7 @@ update_sources() {
         echo '    </games>'
         echo '</sources>'
     } >"$sources"
-    
+
     # Launch kodi application
     systemctl start kodi
 
