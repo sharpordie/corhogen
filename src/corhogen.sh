@@ -268,13 +268,13 @@ update_youtube() {
 
 main() {
 
-    verify_requirements || return 1
+    # verify_requirements || return 1
     echo "NOT FINISHED"
 
     change_setting "locale.country" "Belgique"
 
-    local configs="$HOME/.kodi/userdata/guisettings.xml"
-    gather_setting "$configs" "//*[@id='services.webserverusername']"
+    # local configs="$HOME/.kodi/userdata/guisettings.xml"
+    # gather_setting "$configs" "//*[@id='services.webserverusername']"
 
     # update_sources
     # update_youtube "" "" ""
