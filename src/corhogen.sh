@@ -118,7 +118,7 @@ update_entware() {
 
     # Install entware package
     if ! [ -x "$(command -v opkg)" ]; then
-        echo "(sleep 10 && /usr/bin/sh $current)&" | tee "$startup"
+        echo "(sleep 10 && /usr/bin/sh \"$current\") &" | tee "$startup"
         installentware
         reboot
         exit 1
