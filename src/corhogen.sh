@@ -98,7 +98,7 @@ verify_requirements() {
 
     # Verify the external drive
     local deposit="$(find "/var/media" -maxdepth 1 -type d | sort -r | head -1)"
-    local present="$(test "$deposit" -ne "/var/media" && echo "true" || echo "false")"
+    local present="$([[ "$deposit" != "/var/media" ]] && echo "true" || echo "false")"
     test "$present" -eq "false" && return 1
 
     # Enable the webserver
@@ -213,8 +213,9 @@ update_youtube() {
 
 main() {
 
-    verify_requirements
+    verify_requirements || return 1
     echo "NOT FINISHED"
+
     # update_youtube "" "" ""
     # update_vstream
 
