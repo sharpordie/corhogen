@@ -87,17 +87,29 @@ verify_requirements() {
 
 }
 
-update_docker() {return 0}
+update_docker() {
+    return 0
+}
 
-update_estuary() {return 0}
+update_estuary() {
+    return 0
+}
 
-update_kodi() {return 0}
+update_kodi() {
+    return 0
+}
 
-update_luna() {return 0}
+update_luna() {
+    return 0
+}
 
-update_moonlight() {return 0}
+update_moonlight() {
+    return 0
+}
 
-update_qbittorrent() {return 0}
+update_qbittorrent() {
+    return 0
+}
 
 update_sources() {
 
@@ -139,6 +151,10 @@ update_vstream() {
 
 update_youtube() {
 
+    local factor1=${1}
+    local factor2=${2}
+    local factor3=${3}
+
     # Change the settings
     update_setting "addons.unknownsources" "true"
     update_setting "addons.updatemode" "1"
@@ -162,7 +178,16 @@ update_youtube() {
     local deposit="$HOME/.kodi/userdata/addon_data/plugin.video.youtube"
     local apikeys="$deposit/api_keys.json"
     mkdir -p "$deposit" && {
-
+        echo "{"
+        echo "    \"keys\": {"
+        echo "        \"developer\": {},"
+        echo "        \"personal\": {"
+        echo "            \"api_key\": \"$factor1\","
+        echo "            \"client_id\": \"$factor2\","
+        echo "            \"client_secret\": \"$factor3\""
+        echo "        }"
+        echo "    }"
+        echo "}"
     } >"$apikeys"
 
 }
