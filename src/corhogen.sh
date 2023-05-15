@@ -271,7 +271,10 @@ main() {
     verify_requirements || return 1
     echo "NOT FINISHED"
 
-    gather_setting "//*[@id='services.webserverusername']"
+    change_setting "ocale.country" "Belgique"
+
+    local configs="$HOME/.kodi/userdata/guisettings.xml"
+    gather_setting "$configs" "//*[@id='services.webserverusername']"
 
     # update_sources
     # update_youtube "" "" ""
