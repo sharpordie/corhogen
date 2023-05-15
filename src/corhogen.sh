@@ -26,8 +26,8 @@ enable_addon() {
 
     # # Enable the webserver
     # local results="$(netstat -an | grep 8080 | grep -i listen)"
-    # local present="$(test "$results" -eq "" && echo false || echo true)"
-    # test "$present" -eq "false" && enable_webserver
+    # local present="$([[ "$results" == "" ]] && echo false || echo true)"
+    # [[ "$present" == "false" ]] && enable_webserver
 
     # Invoke jsonrpc request
     local address="localhost:8080"
@@ -99,7 +99,7 @@ verify_requirements() {
     # Verify the external drive
     local deposit="$(find "/var/media" -maxdepth 1 -type d | sort -r | head -1)"
     local present="$([[ "$deposit" != "/var/media" ]] && echo "true" || echo "false")"
-    test "$present" -eq "false" && return 1
+    [[ "$present" == "false" ]] && return 1
 
     # Enable the webserver
     enable_webserver "true" "false"
